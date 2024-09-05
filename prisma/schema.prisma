@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Major {
+  softwareDeveloper
+  webDeveloper
+  mobileDeveloper
+  dataScientist
+  devOps
+  networkEngineer
+
+  accountant
+  salesRepresentative
+  marketingManager
+  humanResources
+  businessAnalyst
+  projectManager
+
+  writer
+  artist
+  designer
+  graphicDesigner
+  photographer
+
+  schoolTeacher
+  curriculumDeveloper
+  tutor
+}
+
+enum WorkStyle {
+  remote
+  hybird
+  onSite
+}
+
+enum ApplicationStatus {
+  candidateScreening
+  interview
+  successed
+}
+
+enum UserRole {
+  hirer
+  jobSeeker
+}
+
+model Job {
+  id                  String        @id @default(uuid())
+  createdAt           DateTime      @default(now())
+  title               String
+  description         String
+  major               Major
+  keywords            String[] // Insted of Skills[]
+  keywordsLowerCase   String[]
+  hirer               Hirer         @relation(fields: [hirerId], references: [id], onDelete: Cascade)
+  hirerId             String
+  requiredExperiences Int
+  workStyle           WorkStyle
+  address             String?
+  startDate           DateTime      @default(now())
+  endDate             DateTime
+  applications        Application[]
+}
+
+model Application {
+  id           String            @id @default(uuid())
+  createdAt    DateTime          @default(now())
+  coverLetter  String
+  documentName String
+  document     Bytes
+  notes        String?
+  status       ApplicationStatus @default(candidateScreening)
+  jobSeeker    JobSeeker         @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+  jobSeekerId  String
+  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId        String
+  @@unique([jobSeekerId, jobId])
+}
+
+model User {
+  id           String         @id @default(uuid())
+  createdAt    DateTime       @default(now())
+  headline     String?
+  name         String
+  email        String         @unique
+  password     String
+  role         UserRole
+  jobSeeker    JobSeeker?
+  hirer        Hirer?
+  notification Notification[]
+}
+
+model Hirer {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String      @unique
+  followers JobSeeker[]
+  jobPosts  Job[]
+}
+
+model JobSeeker {
+  id                String        @id @default(uuid())
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String        @unique
+  keywords          String[]
+  keywordsLowerCase String[]
+  major             Major
+  yearsExperience   Int
+  experiences       Experience[]
+  applications      Application[]
+  following         Hirer[]
+}
+
+model Experience {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  title       String
+  description String
+  link        String?
+  startDate   DateTime
+  endDate     DateTime  @default(now())
+  jobSeeker   JobSeeker @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+  jobSeekerId String
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  content   String
+  link      String? 
+  fromWho   String
+  isRead    Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+}
