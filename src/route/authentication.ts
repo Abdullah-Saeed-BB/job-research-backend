@@ -156,4 +156,22 @@ export function authenticateToken(
   );
 }
 
+export function getClintData(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers["authorization"];
+  const accessToken = authHeader && authHeader.split(" ")[1];
+
+  if (!accessToken) return next();
+
+  jwt.verify(
+    accessToken,
+    process.env.ACCESS_SECRET_KEY as Secret,
+    (err, user) => {
+      if (err) return next();
+      req.body.client = user;
+
+      next();
+    }
+  );
+}
+
 export default router;

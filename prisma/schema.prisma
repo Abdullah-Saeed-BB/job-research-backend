@@ -46,6 +46,7 @@ enum WorkStyle {
 }
 
 enum ApplicationStatus {
+  canceled
   candidateScreening
   interview
   successed

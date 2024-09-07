@@ -10,11 +10,37 @@ const prisma = new PrismaClient();
 
 router.get("/:id", async (req: Request, res: Response) => {
   const id = req.params.id;
-  const clientId = req.body.client.id;
+  const client = req.body.client;
+
+  const isJobSeeker = client.role === "jobSeeker";
 
   const application = await prisma.application.findFirst({
     where: {
       id,
+    },
+    include: {
+      jobSeeker: isJobSeeker
+        ? false
+        : {
+            select: {
+              id: true,
+              keywords: true,
+              major: true,
+              yearsExperience: true,
+              user: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+      job: isJobSeeker
+        ? {
+            select: {
+              title: true,
+              major: true,
+              keywords: true,
+            },
+          }
+        : false,
     },
   });
 
@@ -31,8 +57,8 @@ router.get("/:id", async (req: Request, res: Response) => {
       where: {
         id,
         OR: [
-          { jobSeeker: { userId: clientId } },
-          { job: { hirer: { userId: clientId } } },
+          { jobSeeker: { userId: client.id } },
+          { job: { hirer: { userId: client.id } } },
         ],
       },
     }))
@@ -48,8 +74,6 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   const { coverLetter, documentName, document, jobId, client } = req.body;
-
-  console.log(client);
 
   if (client.role === "hirer") {
     return res.status(400).json({
@@ -197,8 +221,8 @@ router.put("/:id/status", async (req: Request, res: Response) => {
 
 router.put("/:id/filter", async (req: Request, res: Response) => {
   const id = req.params.id;
-  const keywords = req.body.keywords;
-  const { sensitive } = req.query;
+  const { keywords, notification, client } = req.body;
+  const { sensitive, isCancel } = req.query;
 
   if (
     !Array.isArray(keywords) ||
@@ -210,40 +234,131 @@ router.put("/:id/filter", async (req: Request, res: Response) => {
       type: "ValidationError",
     });
   }
-  if (!(await prisma.job.findFirst({ where: { id } }))) {
+  const job = await prisma.job.findFirst({
+    where: {
+      id,
+    },
+    select: {
+      hirer: { select: { userId: true } },
+    },
+  });
+  if (!job) {
     return res.status(400).json({
       error: "The job you looking for, not exist",
       type: "NotFoundError",
     });
+  } else if (job.hirer.userId !== client.id) {
+    return res.status(400).json({
+      error: "You do not have access to filter jobs applications",
+      type: "AuthorizationError",
+    });
   }
 
   try {
-    const filteredApplications = await prisma.application.findMany({
-      where: {
-        jobId: id,
-        jobSeeker: {
-          keywordsLowerCase:
-            sensitive === "false"
-              ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
-              : { hasEvery: keywords.map((k: string) => k.toLowerCase()) },
+    if (isCancel !== "true") {
+      const restApplications = await prisma.application.findMany({
+        where: {
+          status: { not: "canceled" },
+          jobId: id,
+          jobSeeker: {
+            keywordsLowerCase:
+              sensitive === "false"
+                ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
+                : { hasEvery: keywords.map((k: string) => k.toLowerCase()) },
+          },
         },
-      },
-      select: {
-        // createdAt: true,
-        // coverLetter: true,
-        // notes: true,
-        // status: true,
-        jobSeeker: true,
-        jobId: true,
-      },
-    });
+        select: {
+          id: true,
+          createdAt: true,
+          jobSeeker: {
+            select: {
+              yearsExperience: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              keywords: true,
+              major: true,
+            },
+          },
+          notes: true,
+          status: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
-    res.json(filteredApplications);
+      res.json(restApplications);
+    } else {
+      if (!notification) {
+        return res.status(400).json({
+          error:
+            "Required notification message when canceling the applications",
+          type: "NotFoundError",
+        });
+      }
+
+      const applications = await prisma.application.findMany({
+        where: {
+          status: { not: "canceled" },
+          jobId: id,
+          jobSeeker: {
+            NOT: {
+              keywordsLowerCase:
+                sensitive === "false"
+                  ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
+                  : { hasEvery: keywords.map((k: string) => k.toLowerCase()) },
+            },
+          },
+        },
+        select: {
+          id: true,
+          jobSeeker: { select: { userId: true } },
+        },
+      });
+
+      // Send cancel message to the job seekers
+      await prisma.notification.createMany({
+        data: applications.map((app) => ({
+          content: notification,
+          fromWho: client.name,
+          userId: app.jobSeeker.userId,
+          link: `application/${app.id}`,
+        })),
+      });
+
+      const filteredApplications = await prisma.application.updateMany({
+        where: {
+          status: { not: "canceled" },
+          jobId: id,
+          jobSeeker: {
+            NOT: {
+              keywordsLowerCase:
+                sensitive === "false"
+                  ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
+                  : { hasEvery: keywords.map((k: string) => k.toLowerCase()) },
+            },
+          },
+        },
+        data: {
+          status: "canceled",
+        },
+      });
+
+      res.json(filteredApplications);
+    }
   } catch (err: any) {
     res.status(400).json({
-      err,
-      message: err.message,
+      error: "Error occurred during filtering applications",
+      type: "UnexpectedError",
     });
+    // res.status(400).json({
+    //   err,
+    //   message: err.message,
+    // });
   }
 });
 

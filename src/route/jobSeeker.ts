@@ -9,7 +9,21 @@ const prisma = new PrismaClient();
 router.get("/", async (req: Request, res: Response) => {
   const allJobSeekers = await prisma.user.findMany({
     where: { role: "jobSeeker" },
-    include: { jobSeeker: true },
+    select: {
+      id: true,
+      createdAt: true,
+      name: true,
+      headline: true,
+      role: true,
+      jobSeeker: {
+        select: {
+          id: true,
+          keywords: true,
+          major: true,
+          yearsExperience: true,
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -20,14 +34,68 @@ router.get(
   "/:id/experience",
   authenticateToken,
   async (req: Request, res: Response) => {
-    const { id: jobSeekerId } = req.params;
+    const id = req.params.id;
+
+    if (!(await prisma.jobSeeker.findFirst({ where: { id } }))) {
+      return res.status(400).json({
+        error: "The job seeker you want to looking for, not exist",
+        type: "NotFoundError",
+      });
+    }
 
     const jobSeekerExperiences = await prisma.experience.findMany({
-      where: { jobSeekerId },
+      where: { jobSeekerId: id },
       orderBy: { startDate: "desc" },
     });
 
     res.json(jobSeekerExperiences);
+  }
+);
+
+router.get(
+  "/application",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    const client = req.body.client;
+
+    if (client.role === "hirer") {
+      return res.status(400).json({
+        error:
+          "Hirer cannot submit to any job, so hirer do not have any applications",
+        type: "AuthorizationError",
+      });
+    }
+
+    const applications = await prisma.application.findMany({
+      where: {
+        jobSeeker: {
+          userId: client.id,
+        },
+      },
+      include: {
+        job: {
+          select: {
+            id: true,
+            title: true,
+            workStyle: true,
+            address: true,
+            hirer: {
+              select: {
+                id: true,
+                user: {
+                  select: { name: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.json(applications);
   }
 );
 

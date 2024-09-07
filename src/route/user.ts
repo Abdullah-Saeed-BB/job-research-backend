@@ -12,28 +12,28 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req: Request, res: Response) => {
   const allUsers = await prisma.user.findMany({
-    include: {
-      hirer: { include: { _count: { select: { jobPosts: true } } } },
-      jobSeeker: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  res.json(allUsers);
-});
-
-router.get("/hirer", async (req: Request, res: Response) => {
-  const allHirer = await prisma.user.findMany({
-    where: { role: "hirer" },
-    include: {
+    select: {
+      id: true,
+      createdAt: true,
+      name: true,
+      headline: true,
+      role: true,
       hirer: {
         include: { _count: { select: { followers: true, jobPosts: true } } },
+      },
+      jobSeeker: {
+        select: {
+          id: true,
+          keywords: true,
+          major: true,
+          yearsExperience: true,
+        },
       },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  res.json(allHirer);
+  res.json(allUsers);
 });
 
 router.get(
@@ -49,7 +49,7 @@ router.get(
           include: { _count: { select: { followers: true } }, jobPosts: true },
         },
         jobSeeker: {
-          include: { applications: true, experiences: true, following: true },
+          include: { experiences: true, following: true },
         },
       },
     });
@@ -59,19 +59,58 @@ router.get(
 );
 
 router.get("/:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id;
 
   try {
     const user = await prisma.user.findFirstOrThrow({
       where: { OR: [{ id }, { jobSeeker: { id } }, { hirer: { id } }] },
-      include: {
+      select: {
+        id: true,
+        createdAt: true,
+        name: true,
+        headline: true,
+        role: true,
         hirer: {
           include: {
-            jobPosts: { orderBy: { createdAt: "desc" } },
-            followers: { include: { user: true } },
+            jobPosts: {
+              select: {
+                id: true,
+                createdAt: true,
+                title: true,
+                major: true,
+                requiredExperiences: true,
+                keywords: true,
+                workStyle: true,
+                address: true,
+                startDate: true,
+                endDate: true,
+              },
+              orderBy: { createdAt: "desc" },
+            },
+            _count: {
+              select: {
+                followers: true,
+              },
+            },
           },
         },
-        jobSeeker: true,
+        jobSeeker: {
+          select: {
+            id: true,
+            keywords: true,
+            major: true,
+            yearsExperience: true,
+            experiences: {
+              select: {
+                id: true,
+                createdAt: true,
+                title: true,
+                startDate: true,
+                endDate: true,
+              },
+            },
+          },
+        },
       },
     });
 

@@ -10,6 +10,7 @@ import experienceRouter from "./route/experience";
 import jobRouter from "./route/jobPost";
 import applicationRouter from "./route/application";
 import notificationRouter from "./route/notification";
+import hirerRouter from "./route/hirer";
 
 const app: Express = express();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 
 // Use routers
 app.use("/api/user/jobSeeker", jobSeekerRouter);
+app.use("/api/user/hirer", hirerRouter);
 app.use("/api/user", authenticationRouter);
 app.use("/api/user", userRouter);
 app.use("/api/experience", authenticateToken, experienceRouter);

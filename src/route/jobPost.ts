@@ -11,12 +11,6 @@ const router = Router();
 const prisma = new PrismaClient();
 
 router.get("/", async (req: Request, res: Response) => {
-  const jobs = await prisma.job.findMany({ orderBy: { createdAt: "desc" } });
-
-  res.json(jobs);
-});
-
-router.get("/filter", async (req: Request, res: Response) => {
   const { query, major, isOpen, workStyle, experienceYears } = req.query;
 
   try {
@@ -107,6 +101,16 @@ router.get("/filter", async (req: Request, res: Response) => {
             : {},
         ],
       },
+      select: {
+        id: true,
+        createdAt: true,
+        title: true,
+        // description: true,
+        major: true,
+        requiredExperiences: true,
+        workStyle: true,
+        address: true,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -124,7 +128,32 @@ router.get("/filter", async (req: Request, res: Response) => {
 router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const job = await prisma.job.findFirst({ where: { id } });
+  const job = await prisma.job.findFirst({
+    where: { id },
+    select: {
+      id: true,
+      createdAt: true,
+      title: true,
+      description: true,
+      major: true,
+      keywords: true,
+      hirer: {
+        select: {
+          id: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+      requiredExperiences: true,
+      workStyle: true,
+      address: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
 
   if (!job)
     return res.status(400).json({
@@ -145,7 +174,25 @@ router.get(
     const job = await prisma.job.findFirst({
       where: { id },
       include: {
-        applications: { orderBy: { createdAt: "desc" } },
+        applications: {
+          select: {
+            id: true,
+            createdAt: true,
+            status: true,
+            jobSeeker: {
+              select: {
+                yearsExperience: true,
+                major: true,
+                user: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
         hirer: true,
       },
     });
@@ -161,7 +208,22 @@ router.get(
         type: "AuthorizationError",
       });
 
-    res.json(job.applications);
+    const status = ["canceled", "candidateScreening", "interview", "successed"];
+
+    const applications = job.applications.sort((a, b) => {
+      const aIndex = status.indexOf(a.status);
+      const bIndex = status.indexOf(b.status);
+
+      if (aIndex === bIndex) {
+        return 0;
+      } else if (aIndex < bIndex) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+
+    res.json(applications);
   }
 );
 
