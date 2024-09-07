@@ -1,0 +1,4 @@
+.env:
+DATABASE_URL="postgresql://Abdullah:1234@localhost:5432/db-job-research-2"
+ACCESS_SECRET_KEY="32l9eMcPbwS7bdavRzdSsXhOe8XTg76i6pXmUXkNLGAhfI321jpjV2DA2Q5A0JsT"
+REFRESH_SECRET_KEY="5dYLW6uJC1DbAJxLp7DvAQ7UNteisq2JUiPv3E9VgiV8XzenuLSoI173eZajB4H2"
