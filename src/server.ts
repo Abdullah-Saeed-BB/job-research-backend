@@ -29,3 +29,5 @@ app.use("/api/notification", authenticateToken, notificationRouter);
 app.listen(4000, () => {
   console.log("Server running");
 });
+
+export default app;
