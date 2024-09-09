@@ -1,5 +1,5 @@
 Developed a job search backend. This Job Reasearch project will contain Front-end using Next JS, and mobile app using React native.
-[Technolgies](READEME.md#Technolgies)
+[Technolgies](README.md#Technolgies)
 
 ## Technolgies:
 <div>
