@@ -11,91 +11,213 @@ Developed a job search backend. This Job Reasearch project will contain Front-en
 <table>
 	<thead>
 		<tr>
-			<td>Path</td>
-			<td>Method</td>
-			<td>Need auth (JWT)</td>
+			<th>Path</th>
+			<th>Method</th>
+			<th>Is need auth (JWT)</th>
+			<th>Description</th>
 		</tr>
 	</thead>
-	<tbody> 
+	<tbody>
+		<tr>
+			<th colspan="4">USER</th>
+		</tr>
 		<tr>
 			<td>/api/user</td>
 			<td>GET</td>
 			<td>✖️</td>
+			<td>To get all users</td>
 		</tr>
 		<tr>
 			<td>/api/user/:id</td>
 			<td>GET</td>
 			<td>✖️</td>
+			<td>To get user</td>
 		</tr>
 		<tr>
 			<td>/api/user/my-account</td>
 			<td>GET</td>
 			<td>✔️</td>
-		</tr>
-		<tr>
-			<td>/api/user</td>
-			<td>PUT</td>
-			<td>✔️</td>
-		</tr>
-		<tr>
-			<td>/api/user</td>
-			<td>DELETE</td>
-			<td>✔️</td>
-		</tr>
-		<tr>
-			<td>/api/user/signup</td>
-			<td>POST</td>
-			<td>✖️</td>
-		</tr>
-		<tr>
-			<td>/api/user/login</td>
-			<td>POST</td>
-			<td>✖️</td>
-		</tr>
-		<tr>
-			<td>/api/user/refrsh</td>
-			<td>POST</td>
-			<td>✔️ <sup>for refresh access token</sup></td>
+			<td>To get client data</td>
 		</tr>
 		<tr>
 			<td>/api/user/jobSeeker</td>
 			<td>GET</td>
 			<td>✖️</td>
+			<td>To get all job seekers</td>
 		</tr>
 		<tr>
 			<td>/api/user/jobSeeker/:seeker_id/experience</td>
 			<td>GET</td>
 			<td>✔️</td>
+			<td>To get all experience of job seeker</td>
 		</tr>
 		<tr>
 			<td>/api/user/jobSeeker/application</td>
 			<td>GET</td>
 			<td>✔️</td>
-		</tr>
-		<tr>
-			<td>/api/user/jobSeekr/:hirer_id</td>
-			<td>POST</td>
-			<td>✔️</td>
-		</tr>
-		<tr>
-			<td>/api/user/jobSeeker</td>
-			<td>GET</td>
-			<td>✖️</td>
+			<td>As job seeker, this for get all applications that you submited</td>
 		</tr>
 		<tr>
 			<td>/api/user/hirer</td>
 			<td>GET</td>
 			<td>✖️</td>
+			<td>To get all hirer</td>
 		</tr>
 		<tr>
 			<td>/api/user/hirer/:hirer_id/jobPost</td>
 			<td>GET</td>
 			<td>✖️</td>
+			<td>To get all job posts that hirer posted</td>
 		</tr>
 		<tr>
-			<td><b>JOBS</b></td>
-			<td>----</td>
-			<td>----</td>
+			<td>/api/user/jobSeeker/:hirer_id</td>
+			<td>POST</td>
+			<td>✔️</td>
+			<td>As job seeker, this for following hirer</td>
+		</tr>
+		<tr>
+			<td>/api/user/signup</td>
+			<td>POST</td>
+			<td>✖️</td>
+			<td>To sign up</td>
+		</tr>
+		<tr>
+			<td>/api/user/login</td>
+			<td>POST</td>
+			<td>✖️</td>
+			<td>To login</td>
+		</tr>
+		<tr>
+			<td>/api/user/refresh</td>
+			<td>POST</td>
+			<td>✔️</td>
+			<td>To generate a new access token</td>
+		</tr>
+		<tr>
+			<td>/api/user</td>
+			<td>PUT</td>
+			<td>✔️</td>
+			<td>To edit your user data</td>
+		</tr>
+		<tr>
+			<td>/api/user</td>
+			<td>DELETE</td>
+			<td>✔️</td>
+			<td>To delete your account</td>
+		</tr>
+		<tr>
+			<th colspan="4">EXPERIENCE</th>
+		</tr>
+		<tr>
+			<td>/api/experience</td>
+			<td>POST</td>
+			<td>✔️</td>
+			<td>As job seeker, this for create new experience</td>
+		</tr>
+		<tr>
+			<td>/api/experience/:exp_id</td>
+			<td>PUT</td>
+			<td>✔️</td>
+			<td>To edit experience</td>
+		</tr>
+		<tr>
+			<td>/api/experience/:exp_id</td>
+			<td>DELETE</td>
+			<td>✔️</td>
+			<td>To delete experience</td>
+		</tr>
+		<tr>
+			<th colspan="4">JOB</th>
+		</tr>
+		<tr>
+			<td>/api/job?query=&major=&isOpen=&workStyle=&experienceYears=</td>
+			<td>GET</td>
+			<td>✖️</td>
+			<td>To get all job posts, and filter it</td>
+		</tr>
+		<tr>
+			<td>/api/job/:job_id</td>
+			<td>GET</td>
+			<td>✖️</td>
+			<td>To get job post</td>
+		</tr>
+		<tr>
+			<td>/api/job/:job_id/application</td>
+			<td>GET</td>
+			<td>✔️</td>
+			<td>As hirer, this for get all applications of your job post</td>
+		</tr>
+		<tr>
+			<td>/api/job</td>
+			<td>POST</td>
+			<td>✔️</td>
+			<td>To post new job</td>
+		</tr>
+		<tr>
+			<td>/api/job/:job_id</td>
+			<td>PUT</td>
+			<td>✔️</td>
+			<td>To edit job post</td>
+		</tr>
+		<tr>
+			<td>/api/job/:job_id</td>
+			<td>DELETE</td>
+			<td>✔️</td>
+			<td>To delete job post</td>
+		</tr>
+		<tr>
+			<th colspan="4">APPLICATION</th>
+		</tr>
+		<tr>
+			<td>/api/application/:app_id</td>
+			<td>GET</td>
+			<td>✔️</td>
+			<td>to get application</td>
+		</tr>
+		<tr>
+			<td>/api/application</td>
+			<td>POST</td>
+			<td>✔️</td>
+			<td>To submit an application</td>
+		</tr>
+		<tr>
+			<td>/api/application/:app_id</td>
+			<td>PUT</td>
+			<td>✔️</td>
+			<td>To add notes to the application</td>
+		</tr>
+		<tr>
+			<td>/api/application/:app_id/status</td>
+			<td>PUT</td>
+			<td>✔️</td>
+			<td>To edit application status, and send notification to the submiter</td>
+		</tr>
+		<tr>
+			<td>/api/application/:job_id/filter?sensitive=&isCancel=</td>
+			<td>PUT</td>
+			<td>✔️</td>
+			<td>To filter all the application of the job post, and may cancel it</td>
+		</tr>
+		<tr>
+			<th colspan="4">NOTIFICATION</th>
+		</tr>
+		<tr>
+			<td>/api/notification</td>
+			<td>GET</td>
+			<td>✔️</td>
+			<td>To get all your notifications</td>
+		</tr>
+		<tr>
+			<td>/api/notification</td>
+			<td>PUT</td>
+			<td>✔️</td>
+			<td>To set the notification to 'read' statue</td>
+		</tr>
+		<tr>
+			<td>/api/notification/:notifi_id</td>
+			<td>DELETE</td>
+			<td>✔️</td>
+			<td>To delete a notification</td>
 		</tr>
 	</tbody>
 </table>
