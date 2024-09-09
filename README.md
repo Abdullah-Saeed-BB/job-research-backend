@@ -1,5 +1,7 @@
-Developed a job search backend. This Job Reasearch project will contain Front-end using Next JS, and mobile app using React native. 
-### Technolgies:
+Developed a job search backend. This Job Reasearch project will contain Front-end using Next JS, and mobile app using React native.
+[Technolgies](docs/READEME.md#Technolgies)
+
+## Technolgies:
 <div>
 	<img src="https://img.shields.io/badge/Express-dbd02c?logo=express&logoColor=black&style=for-the-badge" height="30" alt="Express logo"/>
 	<img src="https://img.shields.io/badge/PostgreSQL-385a96?logo=postgresql&logoColor=white&style=for-the-badge" height="30" alt="PostgreSQL logo"/>
@@ -7,7 +9,7 @@ Developed a job search backend. This Job Reasearch project will contain Front-en
 	<img src="https://img.shields.io/badge/JWT-black?logo=jsonwebtokens&logoColor=white&style=for-the-badge" height="30" alt="JWT logo"/>
 </div>
 
-### End points:
+## End points:
 <table>
 	<thead>
 		<tr>
@@ -221,3 +223,7 @@ Developed a job search backend. This Job Reasearch project will contain Front-en
 		</tr>
 	</tbody>
 </table>
+
+## Database schema
+![Job_research_schema](https://github.com/user-attachments/assets/2a6f87ce-61c8-493c-995b-c57ebd6e7598)
+
