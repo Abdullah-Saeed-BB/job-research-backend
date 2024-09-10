@@ -1,7 +1,7 @@
-Developed a job search backend. This Job Reasearch project will contain Front-end using Next JS, and mobile app using React native.
+Developed a job research backend. This Job Reasearch project will contain Front-end using Next JS, and mobile app using React native.
 1. [Technolgies](#technolgies)
 2. [End points](#end-points)
-3. [Datbase Schema](#database-schema)
+3. [Database Schema](#database-schema)
 
 ## Technolgies:
 <div>
