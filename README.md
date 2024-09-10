@@ -1,4 +1,4 @@
-Developed a job research backend. This Job Reasearch project will contain Front-end using Next JS, and mobile app using React native.
+Developed a job research backend. This Job research project will contain a Front-end using Next JS, and a mobile app using React native.
 1. [Technolgies](#technolgies)
 2. [End points](#end-points)
 3. [Database Schema](#database-schema)
@@ -11,7 +11,7 @@ Developed a job research backend. This Job Reasearch project will contain Front-
 	<img src="https://img.shields.io/badge/JWT-black?logo=jsonwebtokens&logoColor=white&style=for-the-badge" height="30" alt="JWT logo"/>
 </div>
 
-## End points:
+## Endpoints:
 <table>
 	<thead>
 		<tr>
@@ -59,7 +59,7 @@ Developed a job research backend. This Job Reasearch project will contain Front-
 			<td>/api/user/jobSeeker/application</td>
 			<td>GET</td>
 			<td>✔️</td>
-			<td>As job seeker, this for get all applications that you submited</td>
+			<td>As job seeker, this is to get all applications that you submitted </td>
 		</tr>
 		<tr>
 			<td>/api/user/hirer</td>
@@ -71,13 +71,13 @@ Developed a job research backend. This Job Reasearch project will contain Front-
 			<td>/api/user/hirer/:hirer_id/jobPost</td>
 			<td>GET</td>
 			<td>✖️</td>
-			<td>To get all job posts that hirer posted</td>
+			<td>To get all job posts that the hirer posted</td>
 		</tr>
 		<tr>
 			<td>/api/user/jobSeeker/:hirer_id</td>
 			<td>POST</td>
 			<td>✔️</td>
-			<td>As job seeker, this for following hirer</td>
+			<td>As job seeker, this is for following hirer</td>
 		</tr>
 		<tr>
 			<td>/api/user/signup</td>
@@ -116,7 +116,7 @@ Developed a job research backend. This Job Reasearch project will contain Front-
 			<td>/api/experience</td>
 			<td>POST</td>
 			<td>✔️</td>
-			<td>As job seeker, this for create new experience</td>
+			<td>As job seeker, this is for creating new experience</td>
 		</tr>
 		<tr>
 			<td>/api/experience/:exp_id</td>
@@ -149,7 +149,7 @@ Developed a job research backend. This Job Reasearch project will contain Front-
 			<td>/api/job/:job_id/application</td>
 			<td>GET</td>
 			<td>✔️</td>
-			<td>As hirer, this for get all applications of your job post</td>
+			<td>As hirer, this is for getting all applications of your job post</td>
 		</tr>
 		<tr>
 			<td>/api/job</td>
@@ -200,7 +200,7 @@ Developed a job research backend. This Job Reasearch project will contain Front-
 			<td>/api/application/:job_id/filter?sensitive=&isCancel=</td>
 			<td>PUT</td>
 			<td>✔️</td>
-			<td>To filter all the application of the job post, and may cancel it</td>
+			<td>To filter all the applications of the job post, and may cancel it</td>
 		</tr>
 		<tr>
 			<th colspan="4">NOTIFICATION</th>
