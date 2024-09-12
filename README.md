@@ -109,11 +109,13 @@ Developed a job research backend. This Job research project will contain a Front
 		<tr>
 			<td>/api/user/jobSeeker/:job_id</td>
 			<td>PUT</td>
+			<td>✔️</td>
 			<td>As job seeker, this for saving jobs</td>
 		</tr>
 		<tr>
 			<td>/api/user/link</td>
 			<td>PUT</td>
+			<td>✔️</td>
 			<td>To add links to your user account</td>
 		</tr>
 		<tr>
@@ -241,4 +243,4 @@ Developed a job research backend. This Job research project will contain a Front
 
 ## Database schema
 
-![Job_research_schema](https://github.com/user-attachments/assets/2a6f87ce-61c8-493c-995b-c57ebd6e7598)
+![Job_research_schema_2](https://github.com/user-attachments/assets/9921b8d2-a384-4bbb-8098-1823dbfa3027)
