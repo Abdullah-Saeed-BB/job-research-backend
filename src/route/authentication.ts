@@ -120,17 +120,20 @@ router.post("/signup", async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "The email already exists",
           type: "AuthenticationError",
+          message: err.message,
         });
       }
     } else if (err instanceof PrismaClientValidationError) {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
     return res.status(400).json({
       error: "Error occurred during signup user",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });

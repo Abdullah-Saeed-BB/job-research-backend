@@ -56,6 +56,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "The notification you want to delete not yours",
           type: "AuthorizationError",
+          message: err.message,
         });
       }
     }
@@ -63,6 +64,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     res.status(400).json({
       error: "Error happing during deleting notification",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });

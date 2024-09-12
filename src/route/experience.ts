@@ -36,12 +36,14 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
 
     res.status(400).json({
       error: "Error occurred during adding new experience",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -73,17 +75,20 @@ router.put("/:id", async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "The experience that you want to update, not yours",
           type: "AuthorizationError",
+          message: err.message,
         });
       }
     } else if (err instanceof PrismaClientValidationError) {
       return res.status(400).json({
         error: "Incorrect value type provided",
         type: "ValidationError",
+        message: err.message,
       });
     }
     res.status(400).json({
       error: "Error occurred during updating this experience",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -111,12 +116,14 @@ router.delete("/:id", async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "The experience that you want to delete, not yours",
           type: "AuthorizationError",
+          message: err.message,
         });
       }
     }
     res.status(400).json({
       error: "Error occurred during deleting this experience",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });

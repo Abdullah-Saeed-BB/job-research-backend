@@ -101,22 +101,26 @@ router.post("/", async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "The job you want to submit an application, not exist",
           type: "NotFoundError",
+          message: err.message,
         });
       } else if (err.code === "P2002") {
         return res.status(400).json({
           error: "You can send only one application for each job post",
           type: "AuthorizationError",
+          message: err.message,
         });
       }
     } else if (err instanceof PrismaClientValidationError) {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
     res.status(400).json({
       error: "Error occurred during submitting application",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -150,17 +154,20 @@ router.put("/:id", async (req: Request, res: Response) => {
           error:
             "The job you want to add some notes to one of its applications, not yours",
           type: "AuthorizationError",
+          message: err.message,
         });
       }
     } else if (err instanceof PrismaClientValidationError) {
       return res.status(400).json({
         error: "Incorrect notes type provided",
         type: "ValidationError",
+        message: err.message,
       });
     }
     res.status(400).json({
       error: "Error occurred during adding notes to the application",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -205,17 +212,20 @@ router.put("/:id/status", async (req: Request, res: Response) => {
           error:
             "The job you want to update one of its applications, not yours",
           type: "AuthorizationError",
+          message: err.message,
         });
       }
     } else if (err instanceof PrismaClientValidationError) {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
     res.status(400).json({
       error: "Error occurred during updating status application",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -336,6 +346,7 @@ router.put("/:id/filter", async (req: Request, res: Response) => {
     res.status(400).json({
       error: "Error occurred during filtering applications",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });

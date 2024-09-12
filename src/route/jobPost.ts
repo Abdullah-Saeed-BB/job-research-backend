@@ -165,11 +165,13 @@ router.get("/", getClintData, async (req: Request, res: Response) => {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
     res.status(400).json({
       error: "Error occurred during get the jobs",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -359,12 +361,14 @@ router.post("/", authenticateToken, async (req: Request, res: Response) => {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
 
     res.status(400).json({
       error: "Error occurred during posting new job",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -428,17 +432,20 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
       return res.status(400).json({
         error: "The job you want to update, not yours",
         type: "AuthorizationError",
+        message: err.message,
       });
     } else if (err instanceof PrismaClientValidationError) {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
 
     res.status(400).json({
       error: "Error occurred during updating job post",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -469,12 +476,14 @@ router.delete(
           return res.status(400).json({
             error: "The job that you want to delete, not yours",
             type: "AuthorizationError",
+            message: err.message,
           });
         }
       }
       res.status(400).json({
         error: "Error occurred during deleting the job",
         type: "UnexpectedError",
+        message: err.message,
       });
     }
   }

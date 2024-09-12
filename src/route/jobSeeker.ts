@@ -168,6 +168,7 @@ router.post("/:id", authenticateToken, async (req: Request, res: Response) => {
     return res.status(400).json({
       error: "Error occurred during following hirer",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -229,6 +230,7 @@ router.put(
       res.status(400).json({
         error: "Error occurred during the saveing/unsaving the job",
         type: "UnexpectedError",
+        message: err.message,
       });
     }
   }

@@ -115,6 +115,7 @@ router.get("/:id", async (req: Request, res: Response) => {
         return res.status(400).json({
           error: "The user you looking for not exist",
           type: "NotFoundError",
+          message: err.message,
         });
       }
     }
@@ -122,6 +123,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     res.status(400).json({
       error: "Error happing during search for user",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -148,10 +150,15 @@ router.put("/link", authenticateToken, async (req: Request, res: Response) => {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
 
-    res.status(400).json({ err, message: err.message });
+    res.status(400).json({
+      error: "Error occurred saving links",
+      type: "UnexpectedError",
+      message: err.message,
+    });
   }
 });
 
@@ -222,12 +229,14 @@ router.put("/", authenticateToken, async (req: Request, res: Response) => {
       return res.status(400).json({
         error: "Incorrect value type provided or missing data",
         type: "ValidationError",
+        message: err.message,
       });
     }
 
     res.status(400).json({
       error: "Error occurred during updating user",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
@@ -247,6 +256,7 @@ router.delete("/", authenticateToken, async (req: Request, res: Response) => {
     res.status(400).json({
       error: "Error occurred during delete your account",
       type: "UnexpectedError",
+      message: err.message,
     });
   }
 });
