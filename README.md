@@ -109,11 +109,13 @@ Developed a job research backend. This Job research project will contain a Front
 		<tr>
 			<td>/api/user/jobSeeker/:job_id</td>
 			<td>PUT</td>
+			<td>✔️</td>
 			<td>As job seeker, this for saving jobs</td>
 		</tr>
 		<tr>
 			<td>/api/user/link</td>
 			<td>PUT</td>
+			<td>✔️</td>
 			<td>To add links to your user account</td>
 		</tr>
 		<tr>
