@@ -5,6 +5,7 @@ import {
 } from "@prisma/client/runtime/library";
 import { Router, Request, Response } from "express";
 import { authenticateToken } from "./authentication";
+import { jobProperty, jobSeekerProperty } from "../lib/selectedPropertys";
 
 const router = Router();
 
@@ -45,12 +46,14 @@ router.get(
     const myAccount = await prisma.user.findFirst({
       where: { id },
       include: {
+        links: true,
         hirer: {
-          include: { _count: { select: { followers: true } }, jobPosts: true },
+          include: {
+            _count: { select: { followers: true } },
+            jobPosts: { select: jobProperty },
+          },
         },
-        jobSeeker: {
-          include: { experiences: true, following: true },
-        },
+        jobSeeker: { select: jobSeekerProperty },
       },
     });
 
@@ -69,22 +72,13 @@ router.get("/:id", async (req: Request, res: Response) => {
         createdAt: true,
         name: true,
         headline: true,
+        contactEmail: true,
         role: true,
+        links: true,
         hirer: {
           include: {
             jobPosts: {
-              select: {
-                id: true,
-                createdAt: true,
-                title: true,
-                major: true,
-                requiredExperiences: true,
-                keywords: true,
-                workStyle: true,
-                address: true,
-                startDate: true,
-                endDate: true,
-              },
+              select: jobProperty,
               orderBy: { createdAt: "desc" },
             },
             _count: {
@@ -132,15 +126,54 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.put("/link", authenticateToken, async (req: Request, res: Response) => {
+  const linksList: { name: string; url: string }[] = req.body;
+  const client = req.body.client;
+
+  try {
+    // Delete the old links, to create the new links (like overwrite)
+    await prisma.link.deleteMany({
+      where: {
+        userId: client.id,
+      },
+    });
+
+    const newLinks = await prisma.link.createMany({
+      data: linksList.map((l) => ({ ...l, userId: client.id })),
+    });
+
+    res.json(newLinks);
+  } catch (err: any) {
+    if (err instanceof PrismaClientValidationError) {
+      return res.status(400).json({
+        error: "Incorrect value type provided or missing data",
+        type: "ValidationError",
+      });
+    }
+
+    res.status(400).json({ err, message: err.message });
+  }
+});
+
 router.put("/", authenticateToken, async (req: Request, res: Response) => {
-  const { name, password, headline, keywords, yearsExperience, client } =
-    req.body;
+  const {
+    name,
+    password,
+    headline,
+    contactEmail,
+    keywords,
+    yearsExperience,
+    companySize,
+    location,
+    client,
+  } = req.body;
 
   const isJobSeeker = client.role === "jobSeeker";
 
   if (
-    !Array.isArray(keywords) ||
-    !keywords.every((item) => typeof item === "string")
+    keywords &&
+    (!Array.isArray(keywords) ||
+      !keywords.every((item) => typeof item === "string"))
   ) {
     return res.status(400).json({
       error:
@@ -156,14 +189,23 @@ router.put("/", authenticateToken, async (req: Request, res: Response) => {
         name,
         password,
         headline,
+        contactEmail,
         jobSeeker: isJobSeeker
           ? {
               update: {
                 yearsExperience,
                 keywords,
-                keywordsLowerCase: keywords.map((k: string) =>
-                  k.toLocaleLowerCase()
-                ),
+                keywordsLowerCase: keywords
+                  ? keywords.map((k: string) => k.toLocaleLowerCase())
+                  : undefined,
+              },
+            }
+          : undefined,
+        hirer: !isJobSeeker
+          ? {
+              update: {
+                companySize,
+                location,
               },
             }
           : undefined,
@@ -208,26 +250,5 @@ router.delete("/", authenticateToken, async (req: Request, res: Response) => {
     });
   }
 });
-
-// router.delete("/", async (req: Request, res: Response) => {
-//   // This route should be deleted after finish the project
-//   const { id } = req.query;
-
-//   if (id && typeof id === "string") {
-//     try {
-//       const deletedUser = await prisma.user.delete({ where: { id } });
-
-//       return res.json(deletedUser);
-//     } catch (err: any) {
-//       return res
-//         .status(400)
-//         .json({ error: "This user already deleted", type: "NotFound" });
-//     }
-//   } else {
-//     await prisma.user.deleteMany();
-
-//     return res.json({ message: "All users deleted" });
-//   }
-// });
 
 export default router;

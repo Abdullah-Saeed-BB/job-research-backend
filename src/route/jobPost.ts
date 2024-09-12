@@ -1,63 +1,111 @@
 import { Request, Response, Router } from "express";
-import { Major, PrismaClient, WorkStyle } from "@prisma/client";
-import { authenticateToken } from "./authentication";
+import { JobType, Major, PrismaClient, WorkStyle } from "@prisma/client";
+import { authenticateToken, getClintData } from "./authentication";
 import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
+import { jobProperty } from "../lib/selectedPropertys";
 
 const router = Router();
 
 const prisma = new PrismaClient();
 
-router.get("/", async (req: Request, res: Response) => {
-  const { query, major, isOpen, workStyle, experienceYears } = req.query;
+router.get("/", getClintData, async (req: Request, res: Response) => {
+  const {
+    query,
+    major,
+    isOpen,
+    workStyle,
+    experienceYears,
+    jobType,
+    salaryRange,
+  } = req.query;
+  const client = req.body.client;
+
+  const savedJobs = client
+    ? await prisma.job.findMany({
+        where: { jobSaved: { some: { userId: client.id } } },
+        select: jobProperty,
+      })
+    : [];
+
+  // Check any invalid data
+  if (query && typeof query !== "string") {
+    return res.status(400).json({
+      error: "Query parameter is required to be string",
+      type: "ValidationError",
+    });
+  }
+  if (major && typeof major !== "string") {
+    return res.status(400).json({
+      error: "Major parameter is required to be string",
+      type: "ValidationError",
+    });
+  } else if (major && !Object(Major)[major]) {
+    return res.status(400).json({
+      error: "The major you provide not exist on the list",
+      type: "NotFoundError",
+    });
+  }
+  if (isOpen && isOpen !== "false" && isOpen !== "true") {
+    return res.status(400).json({
+      error: "Is Open parameter is required to be boolean",
+      type: "ValidationError",
+    });
+  }
+  if (workStyle && typeof workStyle !== "string") {
+    return res.status(400).json({
+      error: "Work style parameter is required to be string",
+      type: "ValidationError",
+    });
+  } else if (workStyle && !Object(WorkStyle)[workStyle]) {
+    return res.status(400).json({
+      error: "The work style you provide not exist on the list",
+      type: "NotFoundError",
+    });
+  }
+  if (experienceYears && typeof experienceYears !== "string") {
+    return res.status(400).json({
+      error: "Experience years parameter is required to be string",
+      type: "ValidationError",
+    });
+  }
+  if (jobType && typeof jobType !== "string") {
+    return res.status(400).json({
+      error: "Job type parameter is required to be string",
+      type: "ValidationError",
+    });
+  } else if (jobType && !Object(JobType)[jobType]) {
+    return res.status(400).json({
+      error: "The job type you provide not exist on the list",
+      type: "NotFoundError",
+    });
+  }
+  if (salaryRange && typeof salaryRange !== "string") {
+    return res.status(400).json({
+      error: "Salary range type parameter is required to be string",
+      type: "ValidationError",
+    });
+  } else if (salaryRange && salaryRange.split(",").find((e) => isNaN(+e))) {
+    return res.status(400).json({
+      error: "Salary range is incorrect",
+      type: "ValidationError",
+    });
+  }
 
   try {
-    // Check any invalid data
-    if (query && typeof query !== "string") {
-      return res.status(400).json({
-        error: "Query parameter is required to be string",
-        type: "ValidationError",
-      });
-    }
-    if (major && typeof major !== "string") {
-      return res.status(400).json({
-        error: "Major parameter is required to be string",
-        type: "ValidationError",
-      });
-    } else if (major && !Object(Major)[major]) {
-      return res.status(400).json({
-        error: "The major you provide not exist on the list",
-        type: "NotFoundError",
-      });
-    }
-    if (isOpen && isOpen !== "false" && isOpen !== "true") {
-      return res.status(400).json({
-        error: "Is Open parameter is required to be boolean",
-        type: "ValidationError",
-      });
-    }
-    if (workStyle && typeof workStyle !== "string") {
-      return res.status(400).json({
-        error: "Work style parameter is required to be string",
-        type: "ValidationError",
-      });
-    } else if (workStyle && !Object(WorkStyle)[workStyle]) {
-      return res.status(400).json({
-        error: "The work style you provide not exist on the list",
-        type: "NotFoundError",
-      });
-    }
-    if (experienceYears && typeof experienceYears !== "string") {
-      return res.status(400).json({
-        error: "Experience years parameter is required to be string",
-        type: "ValidationError",
-      });
-    }
-
     const splitExpYears =
       experienceYears && experienceYears.split(",").map((n) => +n);
+
+    let salaryRange500: number[] = [];
+    if (salaryRange) {
+      const splitSalaryRange = salaryRange.split(",").map((n) => +n);
+
+      for (let i = splitSalaryRange[0]; i <= splitSalaryRange[1]; i += 500) {
+        salaryRange500.push(i);
+      }
+    }
 
     const jobsFiltered = await prisma.job.findMany({
       where: {
@@ -91,6 +139,10 @@ router.get("/", async (req: Request, res: Response) => {
               }
             : {},
           workStyle ? { workStyle: workStyle as WorkStyle } : {},
+          jobType ? { jobType: jobType as JobType } : {},
+          salaryRange
+            ? { AND: [{ salaryRange: { hasSome: salaryRange500 } }] }
+            : {},
           splitExpYears
             ? {
                 AND: [
@@ -101,23 +153,20 @@ router.get("/", async (req: Request, res: Response) => {
             : {},
         ],
       },
-      select: {
-        id: true,
-        createdAt: true,
-        title: true,
-        // description: true,
-        major: true,
-        requiredExperiences: true,
-        workStyle: true,
-        address: true,
-      },
+      select: jobProperty,
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    res.json(jobsFiltered);
+    res.json({ jobs: jobsFiltered, savedJobs });
   } catch (err: any) {
+    if (err instanceof PrismaClientValidationError) {
+      return res.status(400).json({
+        error: "Incorrect value type provided or missing data",
+        type: "ValidationError",
+      });
+    }
     res.status(400).json({
       error: "Error occurred during get the jobs",
       type: "UnexpectedError",
@@ -131,27 +180,9 @@ router.get("/:id", async (req: Request, res: Response) => {
   const job = await prisma.job.findFirst({
     where: { id },
     select: {
-      id: true,
-      createdAt: true,
-      title: true,
+      ...jobProperty,
       description: true,
-      major: true,
-      keywords: true,
-      hirer: {
-        select: {
-          id: true,
-          user: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
-      requiredExperiences: true,
-      workStyle: true,
-      address: true,
-      startDate: true,
-      endDate: true,
+      hirer: { select: { id: true, user: { select: { name: true } } } },
     },
   });
 
@@ -223,7 +254,7 @@ router.get(
       }
     });
 
-    res.json(applications);
+    res.json(job);
   }
 );
 
@@ -235,6 +266,8 @@ router.post("/", authenticateToken, async (req: Request, res: Response) => {
     keywords,
     requiredExperiences,
     workStyle,
+    jobType,
+    salaryRange,
     address,
     startDate,
     endDate,
@@ -259,7 +292,7 @@ router.post("/", authenticateToken, async (req: Request, res: Response) => {
   ) {
     return res.status(400).json({
       error:
-        "Incorrect keywords type provided or some data on it is not string",
+        "Missing keywords or incorrect keywords type provided or some data on it is not string",
       type: "ValidationError",
     });
   }
@@ -275,6 +308,8 @@ router.post("/", authenticateToken, async (req: Request, res: Response) => {
         hirer: { connect: { userId: client.id } },
         requiredExperiences,
         workStyle,
+        jobType,
+        salaryRange,
         address,
         startDate,
         endDate,
@@ -343,6 +378,8 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
     keywords,
     requiredExperiences,
     workStyle,
+    jobType,
+    salaryRange,
     startDate,
     endDate,
     client,
@@ -355,8 +392,9 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
     });
   }
   if (
-    !Array.isArray(keywords) ||
-    !keywords.every((item) => typeof item === "string")
+    keywords &&
+    (!Array.isArray(keywords) ||
+      !keywords.every((item) => typeof item === "string"))
   ) {
     return res.status(400).json({
       error:
@@ -377,6 +415,8 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
           keywords && keywords.map((k: string) => k.toLocaleLowerCase()),
         requiredExperiences,
         workStyle,
+        jobType,
+        salaryRange,
         startDate,
         endDate,
       },

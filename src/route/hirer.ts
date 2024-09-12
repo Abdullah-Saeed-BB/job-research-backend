@@ -15,6 +15,8 @@ router.get("/", async (req: Request, res: Response) => {
       name: true,
       headline: true,
       role: true,
+      contactEmail: true,
+      links: true,
       hirer: {
         include: {
           _count: {

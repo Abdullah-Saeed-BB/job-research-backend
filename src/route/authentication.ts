@@ -73,7 +73,16 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 router.post("/signup", async (req: Request, res: Response) => {
-  const { name, email, password, role, major, yearsExperience } = req.body;
+  const {
+    name,
+    email,
+    password,
+    role,
+    major,
+    yearsExperience,
+    companySize,
+    location,
+  } = req.body;
 
   try {
     let user;
@@ -88,7 +97,8 @@ router.post("/signup", async (req: Request, res: Response) => {
           role === "jobSeeker"
             ? { create: { major, yearsExperience } }
             : undefined,
-        hirer: role === "hirer" ? { create: {} } : undefined,
+        hirer:
+          role === "hirer" ? { create: { companySize, location } } : undefined,
       },
     });
 

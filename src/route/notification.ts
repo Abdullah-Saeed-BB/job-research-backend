@@ -64,10 +64,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
       error: "Error happing during deleting notification",
       type: "UnexpectedError",
     });
-    //     res.status(400).json({
-    //       err,
-    //       message: err.message,
-    //     });
   }
 });
 

@@ -57,6 +57,13 @@ enum UserRole {
   jobSeeker
 }
 
+enum JobType {
+  fullTime
+  partTime
+  volunteer
+  internship
+}
+
 model Job {
   id                  String        @id @default(uuid())
   createdAt           DateTime      @default(now())
@@ -70,8 +77,11 @@ model Job {
   requiredExperiences Int
   workStyle           WorkStyle
   address             String?
+  salaryRange         Int[]
+  jobType             JobType       @default(fullTime)
   startDate           DateTime      @default(now())
   endDate             DateTime
+  jobSaved            JobSeeker[]
   applications        Application[]
 }
 
@@ -90,6 +100,14 @@ model Application {
   @@unique([jobSeekerId, jobId])
 }
 
+model Link {
+  id     String @id @default(uuid())
+  name   String
+  url    String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+}
+
 model User {
   id           String         @id @default(uuid())
   createdAt    DateTime       @default(now())
@@ -98,17 +116,30 @@ model User {
   email        String         @unique
   password     String
   role         UserRole
+  links        Link[]
+  contactEmail String?
   jobSeeker    JobSeeker?
   hirer        Hirer?
   notification Notification[]
 }
 
+enum ComapnySize {
+  lessThan10
+  between10to20
+  between20to30
+  between30to50
+  between50to100
+  heigherThan100
+}
+
 model Hirer {
-  id        String      @id @default(uuid())
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String      @unique
-  followers JobSeeker[]
-  jobPosts  Job[]
+  id          String      @id @default(uuid())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String      @unique
+  location    String?
+  companySize ComapnySize @default(lessThan10)
+  followers   JobSeeker[]
+  jobPosts    Job[]
 }
 
 model JobSeeker {
@@ -119,6 +150,7 @@ model JobSeeker {
   keywordsLowerCase String[]
   major             Major
   yearsExperience   Int
+  savedJobs         Job[]
   experiences       Experience[]
   applications      Application[]
   following         Hirer[]

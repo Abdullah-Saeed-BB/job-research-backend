@@ -15,6 +15,8 @@ router.get("/", async (req: Request, res: Response) => {
       name: true,
       headline: true,
       role: true,
+      contactEmail: true,
+      links: true,
       jobSeeker: {
         select: {
           id: true,
@@ -169,5 +171,67 @@ router.post("/:id", authenticateToken, async (req: Request, res: Response) => {
     });
   }
 });
+
+router.put(
+  "/:job_id",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    const jobId = req.params.job_id;
+    const client = req.body.client;
+
+    if (client.role === "hirer") {
+      return res.status(400).json({
+        error: "Saving jobs only for job seekers",
+        type: "AuthorizationError",
+      });
+    }
+
+    const job = await prisma.job.findFirst({
+      where: {
+        id: jobId,
+      },
+      select: {
+        jobSaved: true,
+      },
+    });
+
+    if (!job) {
+      return res.status(400).json({
+        error: "The job you wanna save, not exist",
+        type: "NotFoundError",
+      });
+    }
+
+    const isJobSaved = job.jobSaved.find((js) => js.userId === client.id);
+
+    try {
+      const savedJob = await prisma.jobSeeker.update({
+        where: {
+          userId: client.id,
+        },
+        data: {
+          savedJobs: {
+            disconnect: isJobSaved ? { id: jobId } : undefined,
+            connect: isJobSaved ? undefined : { id: jobId },
+          },
+        },
+        select: {
+          id: true,
+          userId: true,
+          keywords: true,
+          savedJobs: true,
+          major: true,
+        },
+      });
+
+      res.json(savedJob);
+    } catch (err: any) {
+      res.status(400).json({
+        error: "Error occurred during the saveing/unsaving the job",
+        type: "UnexpectedError",
+      });
+    }
+  }
+);
 
 export default router;

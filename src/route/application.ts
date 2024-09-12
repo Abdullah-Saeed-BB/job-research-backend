@@ -4,6 +4,7 @@ import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
+import { applicationPropery } from "../lib/selectedPropertys";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -222,15 +223,23 @@ router.put("/:id/status", async (req: Request, res: Response) => {
 router.put("/:id/filter", async (req: Request, res: Response) => {
   const id = req.params.id;
   const { keywords, notification, client } = req.body;
-  const { sensitive, isCancel } = req.query;
+  const { sensitive, minYearsExperience, isCancel } = req.query;
 
   if (
-    !Array.isArray(keywords) ||
-    !keywords.every((item) => typeof item === "string")
+    keywords &&
+    (!Array.isArray(keywords) ||
+      !keywords.every((item) => typeof item === "string"))
   ) {
     return res.status(400).json({
       error:
         "Incorrect keywords type provided or some data on it is not string",
+      type: "ValidationError",
+    });
+  }
+
+  if (minYearsExperience && isNaN(+minYearsExperience)) {
+    return res.status(400).json({
+      error: "Incorrect minimum experience years type provided",
       type: "ValidationError",
     });
   }
@@ -255,42 +264,29 @@ router.put("/:id/filter", async (req: Request, res: Response) => {
   }
 
   try {
-    if (isCancel !== "true") {
-      const restApplications = await prisma.application.findMany({
-        where: {
-          status: { not: "canceled" },
-          jobId: id,
-          jobSeeker: {
-            keywordsLowerCase:
-              sensitive === "false"
-                ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
-                : { hasEvery: keywords.map((k: string) => k.toLowerCase()) },
-          },
-        },
-        select: {
-          id: true,
-          createdAt: true,
-          jobSeeker: {
-            select: {
-              yearsExperience: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-              keywords: true,
-              major: true,
-            },
-          },
-          notes: true,
-          status: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+    const restApplications = await prisma.application.findMany({
+      where: {
+        status: { not: "canceled" },
+        jobId: id,
+        jobSeeker: {
+          keywordsLowerCase: keywords
+            ? sensitive === "false"
+              ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
+              : { hasEvery: keywords.map((k: string) => k.toLowerCase()) }
+            : undefined,
 
+          yearsExperience: minYearsExperience
+            ? { gte: +minYearsExperience }
+            : undefined,
+        },
+      },
+      select: applicationPropery,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (isCancel !== "true") {
       res.json(restApplications);
     } else {
       if (!notification) {
@@ -304,19 +300,12 @@ router.put("/:id/filter", async (req: Request, res: Response) => {
       const applications = await prisma.application.findMany({
         where: {
           status: { not: "canceled" },
+          id: { notIn: restApplications.map((app) => app.id) },
           jobId: id,
-          jobSeeker: {
-            NOT: {
-              keywordsLowerCase:
-                sensitive === "false"
-                  ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
-                  : { hasEvery: keywords.map((k: string) => k.toLowerCase()) },
-            },
-          },
         },
         select: {
           id: true,
-          jobSeeker: { select: { userId: true } },
+          jobSeeker: { select: { userId: true, yearsExperience: true } },
         },
       });
 
@@ -333,32 +322,21 @@ router.put("/:id/filter", async (req: Request, res: Response) => {
       const filteredApplications = await prisma.application.updateMany({
         where: {
           status: { not: "canceled" },
+          id: { notIn: restApplications.map((app) => app.id) },
           jobId: id,
-          jobSeeker: {
-            NOT: {
-              keywordsLowerCase:
-                sensitive === "false"
-                  ? { hasSome: keywords.map((k: string) => k.toLowerCase()) }
-                  : { hasEvery: keywords.map((k: string) => k.toLowerCase()) },
-            },
-          },
         },
         data: {
           status: "canceled",
         },
       });
 
-      res.json(filteredApplications);
+      res.json({ filteredApplications, applications });
     }
   } catch (err: any) {
     res.status(400).json({
       error: "Error occurred during filtering applications",
       type: "UnexpectedError",
     });
-    // res.status(400).json({
-    //   err,
-    //   message: err.message,
-    // });
   }
 });
 
