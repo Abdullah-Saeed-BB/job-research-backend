@@ -1,9 +1,11 @@
 Developed a job research backend. This Job research project will contain a Front-end using Next JS, and a mobile app using React native.
+
 1. [Technolgies](#technolgies)
 2. [End points](#end-points)
 3. [Database Schema](#database-schema)
 
 ## Technolgies:
+
 <div>
 	<img src="https://img.shields.io/badge/Express-dbd02c?logo=express&logoColor=black&style=for-the-badge" height="30" alt="Express logo"/>
 	<img src="https://img.shields.io/badge/PostgreSQL-385a96?logo=postgresql&logoColor=white&style=for-the-badge" height="30" alt="PostgreSQL logo"/>
@@ -12,6 +14,7 @@ Developed a job research backend. This Job research project will contain a Front
 </div>
 
 ## Endpoints:
+
 <table>
 	<thead>
 		<tr>
@@ -104,6 +107,16 @@ Developed a job research backend. This Job research project will contain a Front
 			<td>To edit your user data</td>
 		</tr>
 		<tr>
+			<td>/api/user/jobSeeker/:job_id</td>
+			<td>PUT</td>
+			<td>As job seeker, this for saving jobs</td>
+		</tr>
+		<tr>
+			<td>/api/user/link</td>
+			<td>PUT</td>
+			<td>To add links to your user account</td>
+		</tr>
+		<tr>
 			<td>/api/user</td>
 			<td>DELETE</td>
 			<td>✔️</td>
@@ -134,7 +147,7 @@ Developed a job research backend. This Job research project will contain a Front
 			<th colspan="4">JOB</th>
 		</tr>
 		<tr>
-			<td>/api/job?query=&major=&isOpen=&workStyle=&experienceYears=</td>
+			<td>/api/job?query=&major=&isOpen=&workStyle=&experienceYears=&jobType=&salaryRange=</td>
 			<td>GET</td>
 			<td>✖️</td>
 			<td>To get all job posts, and filter it</td>
@@ -197,7 +210,7 @@ Developed a job research backend. This Job research project will contain a Front
 			<td>To edit application status, and send notification to the submiter</td>
 		</tr>
 		<tr>
-			<td>/api/application/:job_id/filter?sensitive=&isCancel=</td>
+			<td>/api/application/:job_id/filter?sensitive=&minYearsExperience&isCancel=</td>
 			<td>PUT</td>
 			<td>✔️</td>
 			<td>To filter all the applications of the job post, and may cancel it</td>
@@ -227,5 +240,5 @@ Developed a job research backend. This Job research project will contain a Front
 </table>
 
 ## Database schema
-![Job_research_schema](https://github.com/user-attachments/assets/2a6f87ce-61c8-493c-995b-c57ebd6e7598)
 
+![Job_research_schema](https://github.com/user-attachments/assets/2a6f87ce-61c8-493c-995b-c57ebd6e7598)
